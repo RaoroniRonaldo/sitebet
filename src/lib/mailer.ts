@@ -4,14 +4,26 @@ const NOTIFICATION_RECIPIENT = process.env.ADMIN_NOTIFICATION_EMAIL || 'raoronir
 
 // Cria o transporter se as credenciais SMTP estiverem definidas
 const getTransporter = () => {
-  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
-  const port = Number(process.env.SMTP_PORT) || 465;
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
 
   if (!user || !pass) {
     return null;
   }
+
+  // Se for conta Gmail, o nodemailer possui preset otimizado nativo
+  if (user.endsWith('@gmail.com') || process.env.SMTP_HOST === 'smtp.gmail.com') {
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user,
+        pass: pass.replace(/\s+/g, ''), // Remove espaços caso a senha de app venha com espaços
+      },
+    });
+  }
+
+  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+  const port = Number(process.env.SMTP_PORT) || 465;
 
   return nodemailer.createTransport({
     host,
