@@ -27,3 +27,5 @@ Thumbs.db
 # Build / TypeScript
 dist/
 *.tsbuildinfo
+
+src/certs/*.p12
