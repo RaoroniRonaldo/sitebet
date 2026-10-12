@@ -33,6 +33,8 @@ model User {
   referredById  String?
   referredBy    User?     @relation("Referrals", fields: [referredById], references: [id])
   referrals     User[]    @relation("Referrals")
+  termsAccepted Boolean   @default(false)
+  termsAcceptedAt DateTime?
   createdAt     DateTime  @default(now())
   
   wallet        Wallet?

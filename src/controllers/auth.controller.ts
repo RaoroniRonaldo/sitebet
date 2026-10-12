@@ -47,6 +47,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         fullName,
         avatarId,
         referredById,
+        termsAccepted: true,
+        termsAcceptedAt: new Date(),
         wallet: {
           create: {
             balance: 0.0,
@@ -67,6 +69,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         email: user.email, 
         fullName: user.fullName, 
         avatar: user.avatar?.imageUrl, 
+        termsAccepted: user.termsAccepted,
+        termsAcceptedAt: user.termsAcceptedAt,
         wallet: user.wallet 
       },
       token
@@ -101,7 +105,15 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     res.json({ 
       message: 'Login realizado com sucesso', 
       token,
-      user: { id: user.id, username: user.username, fullName: user.fullName, avatar: user.avatar?.imageUrl, role: user.role }
+      user: { 
+        id: user.id, 
+        username: user.username, 
+        fullName: user.fullName, 
+        avatar: user.avatar?.imageUrl, 
+        role: user.role,
+        termsAccepted: user.termsAccepted,
+        termsAcceptedAt: user.termsAcceptedAt
+      }
     });
   } catch (error) {
     console.error(error);
@@ -173,7 +185,9 @@ export const getMe = async (req: Request, res: Response): Promise<void> => {
       email: user.email,
       fullName: user.fullName,
       avatarId: user.avatarId,
-      avatarUrl: user.avatar?.imageUrl
+      avatarUrl: user.avatar?.imageUrl,
+      termsAccepted: user.termsAccepted,
+      termsAcceptedAt: user.termsAcceptedAt
     });
   } catch (error) {
     console.error('Erro getMe:', error);
@@ -216,5 +230,27 @@ export const getAvatars = async (req: Request, res: Response): Promise<void> => 
   } catch (error) {
     console.error('Erro getAvatars:', error);
     res.status(500).json({ error: 'Erro ao carregar avatares' });
+  }
+};
+
+export const acceptTerms = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = (req as any).user.userId;
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        termsAccepted: true,
+        termsAcceptedAt: new Date()
+      }
+    });
+
+    res.json({
+      message: 'Termo de consentimento aceito e registrado com sucesso no banco de dados',
+      termsAccepted: user.termsAccepted,
+      termsAcceptedAt: user.termsAcceptedAt
+    });
+  } catch (error) {
+    console.error('Erro ao aceitar termos:', error);
+    res.status(500).json({ error: 'Erro ao registrar aceite dos termos' });
   }
 };

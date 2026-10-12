@@ -36,7 +36,7 @@ export default function Home() {
 
   const [dbAvatars, setDbAvatars] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
-  const [userData, setUserData] = useState<{ fullName?: string, avatar?: string, role?: string } | null>(null);
+  const [userData, setUserData] = useState<{ fullName?: string, avatar?: string, role?: string, termsAccepted?: boolean, termsAcceptedAt?: string } | null>(null);
 
   // Ticker de Ganhadores Fake
   const [liveWinner, setLiveWinner] = useState<{ name: string, game: string, amount: string } | null>(null);
@@ -55,7 +55,13 @@ export default function Home() {
     if (savedToken) {
       setToken(savedToken);
       fetchBalance(savedToken);
-      if (savedUser) setUserData(JSON.parse(savedUser));
+      if (savedUser) {
+        const parsed = JSON.parse(savedUser);
+        setUserData(parsed);
+        if (parsed.termsAccepted === false) {
+          setShowPostRegisterConsent(true);
+        }
+      }
     }
     const savedPix = localStorage.getItem('pixKey');
     if (savedPix) setPixKey(savedPix);
@@ -128,6 +134,30 @@ export default function Home() {
     } else {
       alert(data.error || 'Erro ao cadastrar');
     }
+  };
+
+  const confirmAcceptTerms = async () => {
+    const currentToken = token || localStorage.getItem('token');
+    if (currentToken) {
+      try {
+        await fetch(`${API_URL}/auth/accept-terms`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${currentToken}` 
+          }
+        });
+      } catch (e) {
+        console.error('Erro ao registrar aceite no banco:', e);
+      }
+    }
+    if (userData) {
+      const updated = { ...userData, termsAccepted: true };
+      setUserData(updated);
+      localStorage.setItem('user', JSON.stringify(updated));
+    }
+    localStorage.setItem('terms_consent_acknowledged', 'true');
+    setShowPostRegisterConsent(false);
   };
 
   const confirmDeposit = async () => {
@@ -905,14 +935,11 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Ação de aceite obrigatória */}
+            {/* Ação de aceite obrigatória gravada no banco de dados */}
             <div className="pt-3 border-t border-gray-800 relative z-10">
               <button 
                 type="button"
-                onClick={() => {
-                  setShowPostRegisterConsent(false);
-                  localStorage.setItem('terms_consent_acknowledged', 'true');
-                }}
+                onClick={confirmAcceptTerms}
                 className="w-full bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-400 hover:to-amber-400 text-gray-950 font-black py-4 rounded-xl text-sm uppercase tracking-wider transition hover:scale-[1.01] shadow-[0_0_20px_rgba(234,179,8,0.4)] flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>✅</span>
