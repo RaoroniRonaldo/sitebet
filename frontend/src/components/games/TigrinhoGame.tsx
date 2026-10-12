@@ -1,5 +1,5 @@
-"use client";
-
+'use client';
+import { API_URL } from '@/lib/api';
 import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -20,7 +20,7 @@ export default function TigrinhoGame() {
     setToken(savedToken);
 
     // Buscar Saldo do Banco
-    fetch('http://localhost:3000/wallet/balance', {
+    fetch(`${API_URL}/wallet/balance`, {
       headers: { 'Authorization': `Bearer ${savedToken}` }
     })
     .then(res => res.json())
@@ -40,7 +40,7 @@ export default function TigrinhoGame() {
       if (event.data && event.data.type === 'HALLOWEEN_BALANCE_UPDATE') {
         const savedToken = localStorage.getItem('token');
         if (savedToken) {
-          fetch('http://localhost:3000/wallet/balance', {
+          fetch(`${API_URL}/wallet/balance`, {
             headers: { 'Authorization': `Bearer ${savedToken}` }
           })
           .then(res => res.json())

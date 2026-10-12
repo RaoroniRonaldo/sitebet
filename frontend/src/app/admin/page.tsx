@@ -1,4 +1,5 @@
 'use client';
+import { API_URL } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -32,10 +33,10 @@ export default function AdminDashboard() {
     const fetchAll = async () => {
       try {
         const [statsRes, usersRes, txRes, gamesRes] = await Promise.all([
-          fetch('http://localhost:3000/admin/stats', { headers }),
-          fetch('http://localhost:3000/admin/users', { headers }),
-          fetch('http://localhost:3000/admin/transactions', { headers }),
-          fetch('http://localhost:3000/admin/games', { headers })
+          fetch(`${API_URL}/admin/stats`, { headers }),
+          fetch(`${API_URL}/admin/users`, { headers }),
+          fetch(`${API_URL}/admin/transactions`, { headers }),
+          fetch(`${API_URL}/admin/games`, { headers })
         ]);
         
         setStats(await statsRes.json());
@@ -52,7 +53,7 @@ export default function AdminDashboard() {
 
   const handleUpdateRTP = async (id: string, newRTP: number) => {
     try {
-      await fetch(`http://localhost:3000/admin/games/${id}`, {
+      await fetch(`${API_URL}/admin/games/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ rtpLevel: newRTP, isActive: true })

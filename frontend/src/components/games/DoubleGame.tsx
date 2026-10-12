@@ -1,3 +1,5 @@
+'use client';
+import { API_URL } from '@/lib/api';
 import React, { useState, useEffect, useRef } from 'react';
 
 export default function DoubleGame({ code, token, balance, setBalance }: any) {
@@ -56,7 +58,7 @@ export default function DoubleGame({ code, token, balance, setBalance }: any) {
     if (selectedColor && token && balance >= betAmount) {
       isParticipating = true;
       try {
-        await fetch('http://localhost:3000/games/originals/play', {
+        await fetch(`${API_URL}/games/originals/play`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({ game: 'DOUBLE', betAmount, winAmount: 0 })
@@ -86,7 +88,7 @@ export default function DoubleGame({ code, token, balance, setBalance }: any) {
         // GANHOU
         const winAmount = selectedColor === 'WHITE' ? betAmount * 14 : betAmount * 2;
         try {
-          const res = await fetch('http://localhost:3000/games/originals/play', {
+          const res = await fetch(`${API_URL}/games/originals/play`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
             body: JSON.stringify({ game: 'DOUBLE', betAmount: 0, winAmount })

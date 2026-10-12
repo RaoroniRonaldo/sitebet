@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { API_URL } from '@/lib/api';
 
 export default function Home() {
   // Estados da Aplicação
@@ -13,6 +14,7 @@ export default function Home() {
   const [showWithdraw, setShowWithdraw] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showAffiliates, setShowAffiliates] = useState(false);
+  const [affiliateData, setAffiliateData] = useState<any>(null);
 
   // Estados dos Formulários e Dados
   const [email, setEmail] = useState('');
@@ -36,7 +38,7 @@ export default function Home() {
   const [liveWinner, setLiveWinner] = useState<{ name: string, game: string, amount: string } | null>(null);
 
   useEffect(() => {
-    fetch('http://localhost:3000/avatars')
+    fetch(`${API_URL}/avatars`)
       .then(res => res.json())
       .then(data => {
         setDbAvatars(data);
@@ -70,7 +72,7 @@ export default function Home() {
 
   const fetchBalance = async (jwt: string) => {
     try {
-      const res = await fetch('http://localhost:3000/wallet/balance', {
+      const res = await fetch(`${API_URL}/wallet/balance`, {
         headers: { Authorization: `Bearer ${jwt}` }
       });
       const data = await res.json();
@@ -80,7 +82,7 @@ export default function Home() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch('http://localhost:3000/auth/login', {
+    const res = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
@@ -100,7 +102,7 @@ export default function Home() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch('http://localhost:3000/auth/register', {
+    const res = await fetch(`${API_URL}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password, fullName, avatarId: avatar, inviteCode })
@@ -123,7 +125,7 @@ export default function Home() {
     const amount = Number(depositAmount);
     if (!amount || isNaN(amount) || amount <= 0) return alert('Valor inválido');
 
-    const res = await fetch('http://localhost:3000/wallet/deposit', {
+    const res = await fetch(`${API_URL}/wallet/deposit`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ amount })
@@ -142,7 +144,7 @@ export default function Home() {
     if (!generatedPix) return;
     setCheckingPayment(true);
     try {
-      const res = await fetch('http://localhost:3000/webhooks/payment', {
+      const res = await fetch(`${API_URL}/webhooks/payment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pix: [{ txid: generatedPix.txId, valor: depositAmount }] })
@@ -165,7 +167,7 @@ export default function Home() {
     if (!amount || isNaN(amount) || amount <= 0) return alert('Valor inválido');
     if (!pixKey) return alert('Preencha a chave PIX');
 
-    const res = await fetch('http://localhost:3000/wallet/withdraw', {
+    const res = await fetch(`${API_URL}/wallet/withdraw`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ amount, pixKey })
@@ -185,7 +187,7 @@ export default function Home() {
   const openHistory = async () => {
     if (!token) return;
     try {
-      const res = await fetch('http://localhost:3000/wallet/history', {
+      const res = await fetch(`${API_URL}/wallet/history`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -199,7 +201,7 @@ export default function Home() {
   const openAffiliates = async () => {
     if (!token) return alert('Faça login primeiro para acessar o painel de afiliados.');
     try {
-      const res = await fetch('http://localhost:3000/auth/affiliate', {
+      const res = await fetch(`${API_URL}/auth/affiliate`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -219,7 +221,7 @@ export default function Home() {
       return;
     }
 
-    const res = await fetch('http://localhost:3000/games/launch', {
+    const res = await fetch(`${API_URL}/games/launch`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ provider, gameCode })

@@ -1,3 +1,5 @@
+'use client';
+import { API_URL } from '@/lib/api';
 import React, { useEffect, useRef, useState } from 'react';
 
 export default function HalloweenGame({ token, balance, setBalance }: { token: string | null, balance: number, setBalance: (b: number) => void }) {
@@ -21,7 +23,7 @@ export default function HalloweenGame({ token, balance, setBalance }: { token: s
       if (event.data && event.data.type === 'HALLOWEEN_BALANCE_UPDATE') {
         // Atualiza a carteira consultando o backend diretamente
         try {
-          const res = await fetch('http://localhost:3000/wallet/balance', {
+          const res = await fetch(`${API_URL}/wallet/balance`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           const data = await res.json();

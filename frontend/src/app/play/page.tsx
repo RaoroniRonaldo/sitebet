@@ -1,4 +1,5 @@
 'use client';
+import { API_URL } from '@/lib/api';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useState, useEffect, useRef } from 'react';
 import MinesGame from '../../components/games/MinesGame';
@@ -40,7 +41,7 @@ function SlotGame({ code, token, balance, setBalance }: any) {
     }, 100);
 
     try {
-      const res = await fetch('http://localhost:3000/games/spin', {
+      const res = await fetch(`${API_URL}/games/spin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ gameCode: code, betAmount })
@@ -156,7 +157,7 @@ function CrashGame({ code, token, balance, setBalance }: any) {
 
     try {
       // 1. Inicia o jogo no servidor (desconta saldo e pega o ponto de crash real calculado pelo RTP)
-      const res = await fetch('http://localhost:3000/games/crash/start', {
+      const res = await fetch(`${API_URL}/games/crash/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ gameCode: code, betAmount })
@@ -199,7 +200,7 @@ function CrashGame({ code, token, balance, setBalance }: any) {
     setWinAmount(prize);
 
     try {
-      const res = await fetch('http://localhost:3000/games/crash/cashout', {
+      const res = await fetch(`${API_URL}/games/crash/cashout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ gameCode: code, prizeAmount: prize })
@@ -317,7 +318,7 @@ function GameScreen() {
 
   const fetchBalance = async (jwt: string) => {
     try {
-      const res = await fetch('http://localhost:3000/wallet/balance', { headers: { Authorization: `Bearer ${jwt}` } });
+      const res = await fetch(`${API_URL}/wallet/balance`, { headers: { Authorization: `Bearer ${jwt}` } });
       const data = await res.json();
       if (data.balance !== undefined) setBalance(data.balance);
     } catch (e) { }

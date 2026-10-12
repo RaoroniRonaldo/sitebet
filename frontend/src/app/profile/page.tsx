@@ -1,7 +1,7 @@
-"use client";
-
+'use client';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { API_URL } from '@/lib/api';
 
 interface User {
   id: string;
@@ -40,8 +40,8 @@ export default function ProfilePage() {
     const loadData = async () => {
       try {
         const [userRes, avatarsRes] = await Promise.all([
-          fetch('http://localhost:3000/auth/me', { headers: { 'Authorization': `Bearer ${token}` } }),
-          fetch('http://localhost:3000/auth/avatars')
+          fetch(`${API_URL}/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch(`${API_URL}/auth/avatars`)
         ]);
 
         if (userRes.ok && avatarsRes.ok) {
@@ -79,7 +79,7 @@ export default function ProfilePage() {
     localStorage.setItem('pixKey', pixKey);
 
     try {
-      const res = await fetch('http://localhost:3000/auth/me', {
+      const res = await fetch(`${API_URL}/auth/me`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -153,7 +153,7 @@ export default function ProfilePage() {
             <form onSubmit={handleSave} className="space-y-6 relative z-10">
               
               {message && (
-                <div className={\`p-4 rounded-xl font-bold \${message.type === 'success' ? 'bg-green-500/20 text-green-400 border border-green-500/50' : 'bg-red-500/20 text-red-400 border border-red-500/50'}\`}>
+                <div className={`p-4 rounded-xl font-bold ${message.type === 'success' ? 'bg-green-500/20 text-green-400 border border-green-500/50' : 'bg-red-500/20 text-red-400 border border-red-500/50'}`}>
                   {message.text}
                 </div>
               )}
@@ -166,7 +166,7 @@ export default function ProfilePage() {
                     <div 
                       key={av.id}
                       onClick={() => setSelectedAvatarId(av.id)}
-                      className={\`cursor-pointer rounded-full p-1 border-2 transition-all \${selectedAvatarId === av.id ? 'border-yellow-500 scale-110 shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'border-transparent hover:border-gray-500 grayscale hover:grayscale-0'}\`}
+                      className={`cursor-pointer rounded-full p-1 border-2 transition-all ${selectedAvatarId === av.id ? 'border-yellow-500 scale-110 shadow-[0_0_15px_rgba(234,179,8,0.5)]' : 'border-transparent hover:border-gray-500 grayscale hover:grayscale-0'}`}
                     >
                       <img src={av.imageUrl} alt={av.name} className="w-16 h-16 rounded-full bg-gray-700 object-cover" />
                     </div>
@@ -235,5 +235,29 @@ export default function ProfilePage() {
 
       <Footer />
     </div>
+  );
+}
+
+function Header() {
+  const router = useRouter();
+  return (
+    <header className="border-b border-gray-800 bg-gray-900/90 backdrop-blur sticky top-0 z-50">
+      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+        <button onClick={() => router.push('/')} className="flex items-center gap-2 text-yellow-500 font-black text-xl hover:opacity-80 transition">
+          <span className="text-2xl">🎰</span> BET PLATFORM
+        </button>
+        <button onClick={() => router.push('/')} className="text-sm bg-gray-800 hover:bg-gray-700 text-gray-200 px-4 py-2 rounded-xl border border-gray-700 transition">
+          ← Voltar para o Início
+        </button>
+      </div>
+    </header>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="border-t border-gray-800 py-6 text-center text-xs text-gray-500">
+      <p>© {new Date().getFullYear()} Plataforma Bet. Jogue com responsabilidade. 18+</p>
+    </footer>
   );
 }

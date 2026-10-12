@@ -1,3 +1,5 @@
+'use client';
+import { API_URL } from '@/lib/api';
 import React, { useState, useRef, useEffect } from 'react';
 
 export default function MinesGame({ code, token, balance, setBalance }: any) {
@@ -31,7 +33,7 @@ export default function MinesGame({ code, token, balance, setBalance }: any) {
     
     // Dispara a aposta no backend
     try {
-      const res = await fetch('http://localhost:3000/games/originals/play', {
+      const res = await fetch(`${API_URL}/games/originals/play`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ game: 'MINES', betAmount, winAmount: 0 }) // Só aposta inicial
@@ -95,7 +97,7 @@ export default function MinesGame({ code, token, balance, setBalance }: any) {
     const winAmount = betAmount * multiplier;
     
     try {
-      const res = await fetch('http://localhost:3000/games/originals/play', {
+      const res = await fetch(`${API_URL}/games/originals/play`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ game: 'MINES', betAmount: 0, winAmount }) // Sem aposta nova, apenas envia o prêmio
