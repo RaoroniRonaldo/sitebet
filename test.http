@@ -1,0 +1,74 @@
+### 1. Criar um novo usuário (Auth)
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+  "username": "jogador1",
+  "email": "jogador1@email.com",
+  "password": "senha123"
+}
+
+### 
+
+### 2. Fazer Login (Para pegar o Token)
+# Copie o campo "token" da resposta e use nos próximos requests.
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "jogador1@email.com",
+  "password": "senha123"
+}
+
+###
+
+### 3. Fazer um Depósito na Carteira (Requer o Token de Login)
+POST http://localhost:3000/wallet/deposit
+Content-Type: application/json
+Authorization: Bearer <COLE_O_TOKEN_AQUI>
+
+{
+  "amount": 100.50
+}
+
+###
+
+### 4. Consultar Saldo como Usuário
+GET http://localhost:3000/wallet/balance
+Authorization: Bearer <COLE_O_TOKEN_AQUI>
+
+###
+
+### 5. Simular chamada da PG Soft (Consultando Saldo)
+# (A PG Soft não usa o seu Token JWT, ela usa o userId gerado que você passa no momento de abrir o jogo)
+POST http://localhost:3000/provider/pgsoft/GetBalance
+Content-Type: application/json
+
+{
+  "userId": "<COLE_O_ID_DO_USUARIO_AQUI>"
+}
+
+###
+
+### 6. Simular chamada da PG Soft (Rodada do Jogo)
+# Exemplo: O usuário apostou R$ 2.00 e ganhou R$ 10.00
+POST http://localhost:3000/provider/pgsoft/Transfer
+Content-Type: application/json
+
+{
+  "userId": "<COLE_O_ID_DO_USUARIO_AQUI>",
+  "betAmount": 2.00,
+  "winAmount": 10.00,
+  "transactionId": "pgsoft-tx-9999",
+  "gameId": "fortune-tiger"
+}
+
+### 7. O Usuário pede para abrir um Jogo (Requer o Token de Login)
+POST http://localhost:3000/games/launch
+Content-Type: application/json
+Authorization: Bearer <COLE_O_TOKEN_AQUI>
+
+{
+  "provider": "PG_SOFT",
+  "gameCode": "fortune-tiger"
+}

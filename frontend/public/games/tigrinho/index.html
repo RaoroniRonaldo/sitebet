@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tigrinho Original</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- Header: Balance and Title -->
+        <div class="header">
+            <div class="title">🐅 TIGRINHO 🐅</div>
+            <div class="balance-box">
+                SALDO: <span id="balance">R$ 0.00</span>
+            </div>
+        </div>
+
+        <!-- Slot Machine Area -->
+        <div class="slot-machine">
+            <div class="win-overlay" id="win-overlay">GANHOU!</div>
+            <div class="reels-container">
+                <!-- Reel 1 -->
+                <div class="reel" id="reel-0">
+                    <div class="symbols" id="symbols-0"></div>
+                </div>
+                <!-- Reel 2 -->
+                <div class="reel" id="reel-1">
+                    <div class="symbols" id="symbols-1"></div>
+                </div>
+                <!-- Reel 3 -->
+                <div class="reel" id="reel-2">
+                    <div class="symbols" id="symbols-2"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls Area -->
+        <div class="controls">
+            <div class="bet-control">
+                <button id="btn-bet-minus">-</button>
+                <div class="bet-display">
+                    APOSTA<br>
+                    <span id="bet-value">R$ 1.00</span>
+                </div>
+                <button id="btn-bet-plus">+</button>
+            </div>
+            
+            <button id="btn-spin" class="btn-spin">GIRAR</button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

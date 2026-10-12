@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sloty Original</title>
+    <link rel="stylesheet" href="./style.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@700;900&display=swap');
+        
+        body {
+            background-color: #0d0d0d;
+            color: white;
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            flex-direction: column;
+        }
+
+        #game-wrapper {
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 15px;
+            border: 3px solid #ffcc00;
+            box-shadow: 0 0 20px rgba(255, 204, 0, 0.3);
+            text-align: center;
+            position: relative;
+        }
+
+        .hud {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            background: #000;
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px solid #333;
+        }
+
+        .hud div {
+            font-size: 18px;
+            font-weight: 900;
+        }
+
+        .hud span {
+            color: #00ff00;
+        }
+
+        /* The original container */
+        #container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #000;
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px solid #333;
+        }
+
+        .bet-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bet-box button {
+            background: #ffcc00;
+            border: none;
+            color: #000;
+            font-weight: 900;
+            font-size: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .bet-box button:active { transform: scale(0.9); }
+
+        .start-button {
+            background: linear-gradient(#00cc00, #008000);
+            border: none;
+            color: white;
+            font-weight: 900;
+            font-size: 24px;
+            padding: 15px 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #004d00;
+            text-transform: uppercase;
+        }
+
+        .start-button:active:not(:disabled) {
+            transform: translateY(5px);
+            box-shadow: none;
+        }
+        .start-button:disabled {
+            background: #555;
+            box-shadow: 0 5px 0 #333;
+            color: #888;
+            cursor: not-allowed;
+        }
+
+        #win-message {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 50px;
+            color: #ffcc00;
+            text-shadow: 0 0 20px #000, 3px 3px 0 #ff0000;
+            z-index: 100;
+            transition: 0.3s ease;
+            pointer-events: none;
+        }
+
+        #win-message.show {
+            transform: translate(-50%, -50%) scale(1);
+            animation: pop 0.5s infinite alternate;
+        }
+
+        @keyframes pop {
+            from { transform: translate(-50%, -50%) scale(1); }
+            to { transform: translate(-50%, -50%) scale(1.1); }
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="game-wrapper">
+    <div class="hud">
+        <div>SALDO: R$ <span id="balance-display">0.00</span></div>
+        <div style="color: #ffcc00">SLOTY CLASSIC</div>
+    </div>
+
+    <div id="container">
+        <div id="win-message">GANHOU!</div>
+        <div class="window-border">
+            <div class="window">
+                <div class="outer-spacer"></div>
+                <!-- Only 3 columns for simpler math and logic like traditional slots -->
+                <div class="outer-col"><div class="col" id="col-0"></div></div>
+                <div class="outer-spacer"></div>
+                <div class="outer-col"><div class="col" id="col-1"></div></div>
+                <div class="outer-spacer"></div>
+                <div class="outer-col"><div class="col" id="col-2"></div></div>
+                <div class="outer-spacer"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="bet-box">
+            <button id="btn-minus">-</button>
+            <div style="font-weight: 900">APOSTA<br><span style="color:#ffcc00">R$ <span id="bet-display">1.00</span></span></div>
+            <button id="btn-plus">+</button>
+        </div>
+        <button id="btn-spin" class="start-button">GIRAR</button>
+    </div>
+</div>
+
+<script src="./script.js"></script>
+</body>
+</html>

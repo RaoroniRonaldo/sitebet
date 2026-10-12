@@ -1,0 +1,108 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum PaymentMethod {
+  PIX
+  CREDIT_CARD
+}
+
+model User {
+  id            String    @id @default(uuid())
+  username      String    @unique
+  email         String    @unique
+  passwordHash  String
+  fullName      String?
+  avatarId      String?
+  avatar        Avatar?   @relation(fields: [avatarId], references: [id])
+  role          Role      @default(USER)
+  inviteCode    String?   @unique @default(uuid())
+  referredById  String?
+  referredBy    User?     @relation("Referrals", fields: [referredById], references: [id])
+  referrals     User[]    @relation("Referrals")
+  createdAt     DateTime  @default(now())
+  
+  wallet        Wallet?
+  sessions      GameSession[]
+}
+
+model Wallet {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id])
+  balance     Float    @default(0.0) // Saldo em reais/moeda
+  currency    String   @default("BRL")
+  updatedAt   DateTime @updatedAt
+  
+  transactions Transaction[]
+}
+
+model Transaction {
+  id          String   @id @default(uuid())
+  walletId    String
+  wallet      Wallet   @relation(fields: [walletId], references: [id])
+  amount      Float    // Positivo para ganho/depósito, Negativo para aposta/saque
+  type        TransactionType
+  referenceId String?  // ID da transação no provedor (PG Soft)
+  gameId      String?  // ID do jogo que gerou a transação
+  status      TransactionStatus
+  paymentMethod PaymentMethod?
+  createdAt   DateTime @default(now())
+}
+
+model GameSession {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  provider    String   // "PG_SOFT", "CUSTOM", etc.
+  gameCode    String   // Ex: "fortune-tiger"
+  token       String   @unique // Token de sessão usado pelo provedor
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAW
+  BET
+  WIN
+  REFUND
+  COMMISSION
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+model Avatar {
+  id       String  @id @default(uuid())
+  name     String
+  imageUrl String
+  users    User[]
+}
+
+model Game {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  provider    String
+  rtpLevel    Int      @default(95) // Porcentagem de chance de ganho (0-100)
+  isActive    Boolean  @default(true)
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+}

@@ -1,0 +1,219 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Fredoka One', cursive;
+}
+
+body {
+    background-color: #1a0000;
+    background-image: radial-gradient(circle, #5e0000 0%, #1a0000 100%);
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+#game-container {
+    width: 100%;
+    max-width: 400px;
+    height: 100%;
+    max-height: 800px;
+    background: url('https://www.transparenttextures.com/patterns/cubes.png') #b30000;
+    border-radius: 20px;
+    box-shadow: 0 0 30px rgba(255, 0, 0, 0.5), inset 0 0 20px rgba(0,0,0,0.8);
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    position: relative;
+    border: 4px solid #ffd700;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 15px;
+    border: 2px solid #ffcc00;
+}
+
+.title {
+    font-size: 24px;
+    color: #ffcc00;
+    text-shadow: 2px 2px 0px #000;
+}
+
+.balance-box {
+    font-size: 16px;
+    color: #fff;
+    text-align: right;
+}
+
+#balance {
+    color: #00ff00;
+    font-size: 20px;
+    text-shadow: 1px 1px 0px #000;
+}
+
+.slot-machine {
+    flex-grow: 1;
+    background: #2a0000;
+    border-radius: 15px;
+    border: 4px solid #ffcc00;
+    padding: 10px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.9);
+}
+
+.win-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    font-size: 48px;
+    color: #ffeb3b;
+    text-shadow: 0 0 20px #ff0000, 3px 3px 0 #000;
+    z-index: 10;
+    pointer-events: none;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.win-overlay.show {
+    transform: translate(-50%, -50%) scale(1);
+    animation: pulse 1s infinite alternate;
+}
+
+@keyframes pulse {
+    from { transform: translate(-50%, -50%) scale(1); }
+    to { transform: translate(-50%, -50%) scale(1.1); }
+}
+
+.reels-container {
+    display: flex;
+    gap: 10px;
+    height: 300px;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+.reel {
+    flex: 1;
+    background: #fdf5e6;
+    border-radius: 10px;
+    border: 2px solid #8b0000;
+    box-shadow: inset 0 10px 20px rgba(0,0,0,0.5), inset 0 -10px 20px rgba(0,0,0,0.5);
+    overflow: hidden;
+    position: relative;
+}
+
+.symbols {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 0;
+    width: 100%;
+}
+
+.symbol {
+    height: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 60px;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    background: linear-gradient(to bottom, #fff 0%, #f0f0f0 100%);
+}
+
+.symbol.highlight {
+    background: #ffffcc;
+    animation: flash 0.5s infinite;
+}
+
+@keyframes flash {
+    0% { background: #ffffcc; }
+    50% { background: #ffcc00; }
+    100% { background: #ffffcc; }
+}
+
+.controls {
+    margin-top: 20px;
+    background: rgba(0,0,0,0.6);
+    padding: 15px;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.bet-control {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #330000;
+    border-radius: 10px;
+    border: 2px solid #ffcc00;
+    padding: 5px;
+}
+
+.bet-control button {
+    background: #ffcc00;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 5px;
+    font-size: 24px;
+    color: #5e0000;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #cc9900;
+}
+
+.bet-control button:active {
+    transform: translateY(4px);
+    box-shadow: none;
+}
+
+.bet-display {
+    text-align: center;
+    font-size: 14px;
+    color: #ffcc00;
+}
+
+#bet-value {
+    font-size: 20px;
+    color: #fff;
+}
+
+.btn-spin {
+    background: linear-gradient(to bottom, #00ff00, #008000);
+    border: 3px solid #b3ffb3;
+    padding: 20px;
+    border-radius: 15px;
+    font-size: 32px;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 8px 0 #004d00, 0 15px 20px rgba(0,0,0,0.5);
+    text-shadow: 2px 2px 0px #000;
+    transition: all 0.1s;
+}
+
+.btn-spin:active {
+    transform: translateY(8px);
+    box-shadow: 0 0 0 #004d00, 0 5px 10px rgba(0,0,0,0.5);
+}
+
+.btn-spin:disabled {
+    background: #555;
+    border-color: #777;
+    box-shadow: 0 8px 0 #333;
+    color: #999;
+    cursor: not-allowed;
+}

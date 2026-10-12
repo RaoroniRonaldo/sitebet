@@ -1,0 +1,29 @@
+# Dependências
+node_modules/
+frontend/node_modules/
+
+# Variáveis de ambiente
+.env
+.env*.local
+frontend/.env*.local
+
+# Next.js build
+frontend/.next/
+frontend/out/
+
+# Logs e arquivos de depuração
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Sistema
+.DS_Store
+Thumbs.db
+.agents/
+.claude/
+.cursor/
+.devin/
+
+# Build / TypeScript
+dist/
+*.tsbuildinfo
