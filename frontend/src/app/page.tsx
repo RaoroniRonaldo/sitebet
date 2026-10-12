@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { API_URL } from '@/lib/api';
+import PwaInstallButton from '../components/PwaInstallButton';
 
 export default function Home() {
   // Estados da Aplicação
@@ -286,6 +287,14 @@ export default function Home() {
             <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-yellow-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></span>
             🤝 Indique e Ganhe
           </button>
+
+          {/* Banner PWA no Menu Lateral */}
+          <div className="mt-8 p-3.5 rounded-2xl bg-gradient-to-br from-yellow-500/10 via-gray-800/80 to-gray-900 border border-yellow-500/30 text-center flex flex-col items-center">
+            <div className="text-2xl mb-1">📱</div>
+            <div className="text-xs font-black text-yellow-400 uppercase tracking-wider mb-1">App no Celular</div>
+            <p className="text-[11px] text-gray-400 mb-3">Instale para jogar mais rápido sem abrir o navegador!</p>
+            <PwaInstallButton />
+          </div>
         </nav>
       </aside>
 
@@ -310,7 +319,8 @@ export default function Home() {
             )}
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex items-center gap-2 md:gap-3">
+            <PwaInstallButton />
             {token ? (
               <div className="flex items-center gap-3">
                 <div className="bg-gray-800 border border-gray-700 px-4 py-1.5 rounded-lg flex flex-col items-end">
