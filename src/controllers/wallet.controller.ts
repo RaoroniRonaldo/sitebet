@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
 import { efi } from '../lib/efi';
-import { notifyWithdraw } from '../lib/mailer';
+import { notifyWithdraw, notifyDeposit } from '../lib/mailer';
 
 export const getBalance = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -213,5 +213,201 @@ export const simulateWithdraw = async (req: Request, res: Response): Promise<voi
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Erro ao processar saque' });
+  }
+};
+
+/**
+ * Verifica o status de um depósito específico diretamente na Efí Bank
+ * Se concluído, credita o saldo e dispara o e-mail de notificação
+ */
+export const checkDepositStatus = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { txid } = req.params;
+    if (!txid) {
+      res.status(400).json({ error: 'txid obrigatório' });
+      return;
+    }
+
+    const transaction = await prisma.transaction.findFirst({
+      where: { referenceId: txid, type: 'DEPOSIT' },
+      include: { wallet: { include: { user: true } } }
+    });
+
+    if (!transaction) {
+      res.status(404).json({ error: 'Transação não encontrada' });
+      return;
+    }
+
+    if (transaction.status === 'COMPLETED') {
+      res.json({
+        status: 'COMPLETED',
+        paid: true,
+        message: 'Pagamento já creditado!',
+        balance: transaction.wallet.balance
+      });
+      return;
+    }
+
+    // Consulta em tempo real na API da Efí
+    try {
+      const efiCharge = await efi.pixDetailCharge({ txid });
+      console.log(`[Consulta Efí] Status da txid ${txid}:`, efiCharge?.status);
+
+      if (efiCharge?.status === 'CONCLUIDA') {
+        const valorPago = parseFloat(efiCharge.valor?.original || transaction.amount.toString());
+
+        const [updatedWallet] = await prisma.$transaction([
+          prisma.wallet.update({
+            where: { id: transaction.walletId },
+            data: { balance: { increment: valorPago } }
+          }),
+          prisma.transaction.update({
+            where: { id: transaction.id },
+            data: { status: 'COMPLETED' }
+          })
+        ]);
+
+        // Dispara e-mail de notificação para o admin
+        notifyDeposit({
+          userId: transaction.wallet.user.id,
+          userEmail: transaction.wallet.user.email,
+          userName: transaction.wallet.user.fullName,
+          amount: valorPago,
+          txId: txid,
+          date: new Date()
+        }).catch(err => console.error('[Erro Mailer Deposito]', err));
+
+        res.json({
+          status: 'COMPLETED',
+          paid: true,
+          message: 'Pagamento identificado e saldo creditado com sucesso!',
+          balance: updatedWallet.balance
+        });
+        return;
+      }
+
+      res.json({
+        status: efiCharge?.status || 'PENDING',
+        paid: false,
+        message: 'Pagamento ainda não confirmado pela Efí'
+      });
+    } catch (efiErr: any) {
+      console.error('[Erro pixDetailCharge]', efiErr?.response?.data || efiErr?.message || efiErr);
+      res.json({
+        status: 'PENDING',
+        paid: false,
+        message: 'Aguardando confirmação bancária'
+      });
+    }
+  } catch (error) {
+    console.error('Erro checkDepositStatus:', error);
+    res.status(500).json({ error: 'Erro ao verificar status do depósito' });
+  }
+};
+
+/**
+ * Varre todos os depósitos PENDING das últimas 24h e sincroniza com a Efí
+ */
+export const syncPendingDeposits = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const pendingTxs = await prisma.transaction.findMany({
+      where: {
+        type: 'DEPOSIT',
+        status: 'PENDING',
+        referenceId: { not: null }
+      },
+      include: { wallet: { include: { user: true } } },
+      orderBy: { createdAt: 'desc' },
+      take: 20
+    });
+
+    const results = [];
+
+    for (const tx of pendingTxs) {
+      if (!tx.referenceId) continue;
+      try {
+        const efiCharge = await efi.pixDetailCharge({ txid: tx.referenceId });
+        if (efiCharge?.status === 'CONCLUIDA') {
+          const valorPago = parseFloat(efiCharge.valor?.original || tx.amount.toString());
+
+          const [updatedWallet] = await prisma.$transaction([
+            prisma.wallet.update({
+              where: { id: tx.walletId },
+              data: { balance: { increment: valorPago } }
+            }),
+            prisma.transaction.update({
+              where: { id: tx.id },
+              data: { status: 'COMPLETED' }
+            })
+          ]);
+
+          notifyDeposit({
+            userId: tx.wallet.user.id,
+            userEmail: tx.wallet.user.email,
+            userName: tx.wallet.user.fullName,
+            amount: valorPago,
+            txId: tx.referenceId,
+            date: new Date()
+          }).catch(err => console.error('[Erro Mailer Deposito]', err));
+
+          results.push({ txid: tx.referenceId, status: 'CREDITADO', valor: valorPago, user: tx.wallet.user.email });
+        } else {
+          results.push({ txid: tx.referenceId, status: efiCharge?.status || 'PENDING' });
+        }
+      } catch (err: any) {
+        results.push({ txid: tx.referenceId, error: err?.response?.data?.mensagem || err?.message });
+      }
+    }
+
+    res.json({
+      message: 'Sincronização concluída',
+      totalVerificados: pendingTxs.length,
+      detalhes: results
+    });
+  } catch (error) {
+    console.error('Erro syncPendingDeposits:', error);
+    res.status(500).json({ error: 'Erro ao sincronizar depósitos pendentes' });
+  }
+};
+
+/**
+ * Parametriza ou consulta o webhook da chave PIX na Efí Bank
+ */
+export const setupWebhook = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const webhookUrl = 'https://sitebet-backend.onrender.com/webhooks/payment';
+    const chave = process.env.EFI_PIX_KEY as string;
+
+    const response = await efi.pixConfigWebhook({ chave }, { webhookUrl });
+    res.json({
+      success: true,
+      message: 'Webhook parametrizado com sucesso na Efí!',
+      chave,
+      webhookUrl,
+      response
+    });
+  } catch (error: any) {
+    console.error('Erro setupWebhook:', error?.response?.data || error?.message || error);
+    res.status(500).json({
+      error: 'Erro ao configurar webhook na Efí',
+      details: error?.response?.data || error?.message
+    });
+  }
+};
+
+export const getWebhookInfo = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const chave = process.env.EFI_PIX_KEY as string;
+    const response = await efi.pixDetailWebhook({ chave });
+    res.json({
+      chave,
+      response
+    });
+  } catch (error: any) {
+    console.error('Erro getWebhookInfo:', error?.response?.data || error?.message || error);
+    res.status(500).json({
+      error: 'Erro ao consultar webhook na Efí',
+      details: error?.response?.data || error?.message
+    });
   }
 };

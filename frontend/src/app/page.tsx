@@ -179,6 +179,50 @@ export default function Home() {
     }
   };
 
+  // Verificação manual imediata com a Efí
+  const verifyPaymentNow = async () => {
+    if (!generatedPix) return;
+    setCheckingPayment(true);
+    try {
+      const res = await fetch(`${API_URL}/wallet/deposit/status/${generatedPix.txId}`);
+      const data = await res.json();
+      if (data.paid || data.status === 'COMPLETED') {
+        alert('🎉 Pagamento confirmado pela Efí! Seu saldo foi atualizado.');
+        setGeneratedPix(null);
+        setShowDeposit(false);
+        if (token) fetchBalance(token);
+      } else {
+        alert('Aguardando compensação do banco... Se você acabou de pagar, aguarde alguns segundos e clique novamente.');
+      }
+    } catch (e) {
+      console.error('Erro ao verificar status:', e);
+    } finally {
+      setCheckingPayment(false);
+    }
+  };
+
+  // Monitoramento automático a cada 3 segundos enquanto o QR Code estiver aberto
+  useEffect(() => {
+    if (!generatedPix) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`${API_URL}/wallet/deposit/status/${generatedPix.txId}`);
+        const data = await res.json();
+        if (data.paid || data.status === 'COMPLETED') {
+          clearInterval(interval);
+          setGeneratedPix(null);
+          setShowDeposit(false);
+          if (token) fetchBalance(token);
+        }
+      } catch (e) {
+        // polling silencioso
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [generatedPix, token]);
+
   // Botão [DEV] Simular Pagamento do Gateway
   const simulateGatewayPayment = async () => {
     if (!generatedPix) return;
@@ -684,9 +728,17 @@ export default function Home() {
                 <div className="flex flex-col gap-2 mt-2">
                   <button 
                     onClick={() => navigator.clipboard.writeText(generatedPix.code).then(() => alert('Chave Copiada!'))}
-                    className="bg-gray-800 text-white font-black py-4 rounded-xl border border-gray-700 hover:border-yellow-500 transition-all shadow-lg"
+                    className="bg-gray-800 text-white font-black py-3.5 rounded-xl border border-gray-700 hover:border-yellow-500 transition-all shadow-lg text-sm"
                   >
                     📋 COPIAR CÓDIGO PIX
+                  </button>
+
+                  <button 
+                    onClick={verifyPaymentNow}
+                    disabled={checkingPayment}
+                    className="bg-green-500 hover:bg-green-400 text-gray-950 font-black py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(34,197,94,0.4)] flex items-center justify-center gap-2 cursor-pointer text-sm"
+                  >
+                    <span>{checkingPayment ? '⏳ Verificando na Efí...' : '🔄 JÁ FIZ O PAGAMENTO / VERIFICAR SALDO'}</span>
                   </button>
                   
                   {/* Botão de Teste Local - Aciona o Webhook */}
