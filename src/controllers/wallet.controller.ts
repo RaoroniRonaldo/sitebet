@@ -76,8 +76,9 @@ export const requestDeposit = async (req: Request, res: Response): Promise<void>
       qrCodeImage: qrCode.imagemQrcode // Base64 do QR Code visual
     });
   } catch (error: any) {
-    console.error('ERRO API EFI:', error?.response || error);
-    res.status(500).json({ error: 'Erro ao gerar PIX na Efí' });
+    console.error('ERRO API EFI:', error?.response?.data || error?.message || error);
+    const detail = error?.response?.data?.mensagem || error?.message || 'Erro ao gerar PIX na Efí';
+    res.status(500).json({ error: detail });
   }
 };
 
