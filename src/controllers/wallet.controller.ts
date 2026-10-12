@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
 import { efi } from '../lib/efi';
+import { notifyWithdraw } from '../lib/mailer';
 
 export const getBalance = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -115,6 +116,7 @@ export const simulateWithdraw = async (req: Request, res: Response): Promise<voi
       return;
     }
 
+    const user = await prisma.user.findUnique({ where: { id: userId } });
     const wallet = await prisma.wallet.findUnique({ where: { userId } });
     if (!wallet) {
       res.status(404).json({ error: 'Carteira nao encontrada' });
@@ -147,6 +149,18 @@ export const simulateWithdraw = async (req: Request, res: Response): Promise<voi
         referenceId: transactionId
       }
     });
+
+    // Notifica o administrador por e-mail com data, usuário, valor e chave PIX
+    notifyWithdraw({
+      userId,
+      userEmail: user?.email || 'Sem e-mail',
+      userName: user?.fullName,
+      amount,
+      pixKey,
+      txId: transactionId,
+      status: 'SOLICITADO / PENDENTE',
+      date: new Date()
+    }).catch(err => console.error('[Erro Mailer Saque]', err));
 
     // 2. Monta a requisição de Saque PIX para a Efí
     const body = {

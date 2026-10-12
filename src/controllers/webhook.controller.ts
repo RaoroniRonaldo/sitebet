@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
+import { notifyDeposit } from '../lib/mailer';
 
 // Chaves do Agente na PlayFiver (Configure no .env futuramente)
 const AGENT_CODE = process.env.PLAYFIVER_AGENT_CODE || 'DEMO_AGENT';
@@ -115,6 +116,16 @@ export const handlePaymentWebhook = async (req: Request, res: Response): Promise
       ]);
 
       console.log(`[Webhook Efí] Saldo de ${updatedWallet.balance} creditado para ${transaction.wallet.user.email}`);
+
+      // Notifica o administrador por e-mail com data, usuário e valor
+      notifyDeposit({
+        userId: transaction.wallet.user.id,
+        userEmail: transaction.wallet.user.email,
+        userName: transaction.wallet.user.fullName,
+        amount: valorPago,
+        txId: txid,
+        date: new Date()
+      }).catch(err => console.error('[Erro Mailer Deposito]', err));
     }
 
     res.status(200).json({ msg: "Processado com sucesso" });
