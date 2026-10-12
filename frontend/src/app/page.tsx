@@ -16,6 +16,9 @@ export default function Home() {
   const [showHistory, setShowHistory] = useState(false);
   const [showAffiliates, setShowAffiliates] = useState(false);
   const [affiliateData, setAffiliateData] = useState<any>(null);
+  const [acceptedTerms, setAcceptedTerms] = useState(true);
+  const [showPostRegisterConsent, setShowPostRegisterConsent] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
 
   // Estados dos Formulários e Dados
   const [email, setEmail] = useState('');
@@ -103,6 +106,10 @@ export default function Home() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!acceptedTerms) {
+      alert('Você precisa aceitar os Termos de Uso e Jogo Responsável para se cadastrar.');
+      return;
+    }
     const res = await fetch(`${API_URL}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -116,6 +123,8 @@ export default function Home() {
       setUserData(data.user);
       setShowRegister(false);
       fetchBalance(data.token);
+      // Exibe imediatamente o termo de consentimento e responsabilidade pós-cadastro
+      setShowPostRegisterConsent(true);
     } else {
       alert(data.error || 'Erro ao cadastrar');
     }
@@ -531,7 +540,17 @@ export default function Home() {
           {/* Footer Simple */}
           <footer className="w-full bg-gray-900 border-t border-gray-800 p-8 text-center text-gray-500 text-sm">
             <p>SITEBET © 2026. Todos os direitos reservados.</p>
-            <p className="mt-2 text-xs">Jogue com responsabilidade. Proibido para menores de 18 anos.</p>
+            <p className="mt-2 text-xs flex flex-wrap items-center justify-center gap-1.5">
+              <span>Jogue com responsabilidade. Proibido para menores de 18 anos.</span>
+              <span>•</span>
+              <button 
+                type="button"
+                onClick={() => setShowTermsModal(true)} 
+                className="text-yellow-400 hover:text-yellow-300 hover:underline font-bold transition cursor-pointer"
+              >
+                Termos de Uso e Diversão
+              </button>
+            </p>
           </footer>
         </main>
       </div>
@@ -578,6 +597,28 @@ export default function Home() {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* Termo de Consentimento Obrigatório no Cadastro */}
+              <div className="bg-gray-800/80 p-3.5 rounded-xl border border-yellow-500/30 flex items-start gap-3 mt-1">
+                <input 
+                  type="checkbox" 
+                  id="regTerms"
+                  checked={acceptedTerms}
+                  onChange={e => setAcceptedTerms(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 rounded accent-yellow-500 cursor-pointer flex-shrink-0"
+                  required
+                />
+                <label htmlFor="regTerms" className="text-[11px] text-gray-300 leading-snug cursor-pointer select-none">
+                  Declaro ter <strong>18 anos ou mais</strong> e compreendo que o site é <strong>exclusivamente para diversão e lazer</strong>, sem garantia de ganhos ou lucros.{' '}
+                  <button 
+                    type="button" 
+                    onClick={() => setShowTermsModal(true)} 
+                    className="text-yellow-400 font-bold underline hover:text-yellow-300 ml-0.5"
+                  >
+                    Ler Termos
+                  </button>
+                </label>
               </div>
 
               <button type="submit" className="bg-yellow-500 text-gray-900 font-black text-lg py-4 rounded-xl mt-2 hover:bg-yellow-400 transition hover:scale-[1.02] shadow-[0_0_20px_rgba(234,179,8,0.3)]">CADASTRAR E JOGAR</button>
@@ -797,6 +838,128 @@ export default function Home() {
 
             <button onClick={() => setShowAffiliates(false)} className="w-full bg-gray-800 text-white font-bold py-4 rounded-xl hover:bg-gray-700 border border-gray-700 transition uppercase tracking-widest text-sm relative z-10">
               FECHAR PAINEL
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Consentimento Exibido Imediatamente Após o Cadastro Finalizado */}
+      {showPostRegisterConsent && (
+        <div className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="bg-gray-900 border-2 border-yellow-500/60 p-6 md:p-8 rounded-3xl w-full max-w-lg shadow-[0_0_50px_rgba(234,179,8,0.25)] relative overflow-hidden text-white max-h-[90vh] flex flex-col">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-24 bg-yellow-500/20 blur-[50px] pointer-events-none"></div>
+
+            <div className="text-center mb-4 relative z-10">
+              <div className="w-16 h-16 bg-yellow-500/10 border border-yellow-500/40 rounded-2xl flex items-center justify-center mx-auto mb-3 text-3xl shadow-inner animate-pulse">
+                🛡️
+              </div>
+              <span className="bg-yellow-500 text-gray-950 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-2 inline-block">
+                Cadastro Concluído com Sucesso
+              </span>
+              <h2 className="text-2xl md:text-3xl font-black text-white">Termo de Uso & Diversão Consciente</h2>
+              <p className="text-xs text-gray-400 mt-1">
+                Por favor, leia atentamente as diretrizes da plataforma antes de iniciar suas apostas:
+              </p>
+            </div>
+
+            {/* Conteúdo rolável com as regras claras */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 space-y-3.5 my-3 relative z-10 text-xs md:text-sm">
+              <div className="bg-gray-800/80 p-3.5 rounded-2xl border border-gray-700/80 flex gap-3 items-start">
+                <span className="text-xl flex-shrink-0">🎯</span>
+                <div>
+                  <h4 className="font-bold text-yellow-400 text-xs uppercase tracking-wider mb-0.5">Finalidade Exclusiva: Diversão</h4>
+                  <p className="text-gray-300 text-xs leading-relaxed">
+                    A SiteBet foi concebida unicamente como uma plataforma de <strong>lazer e entretenimento recreativo</strong>. Os jogos destinam-se a momentos de diversão.
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-yellow-500/10 p-3.5 rounded-2xl border border-yellow-500/30 flex gap-3 items-start">
+                <span className="text-xl flex-shrink-0">⚠️</span>
+                <div>
+                  <h4 className="font-bold text-yellow-300 text-xs uppercase tracking-wider mb-0.5">Sem Garantia de Ganhos ou Lucros</h4>
+                  <p className="text-gray-200 text-xs leading-relaxed">
+                    Jogos de cassino e apostas envolvem <strong>riscos matemáticos e resultados aleatórios</strong>. Sob nenhuma hipótese garantimos ganhos, retornos financeiros ou renda. Você pode ganhar ou perder o valor apostado.
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-gray-800/80 p-3.5 rounded-2xl border border-gray-700/80 flex gap-3 items-start">
+                <span className="text-xl flex-shrink-0">🔞</span>
+                <div>
+                  <h4 className="font-bold text-gray-200 text-xs uppercase tracking-wider mb-0.5">Maioridade Legal (+18)</h4>
+                  <p className="text-gray-300 text-xs leading-relaxed">
+                    O acesso, cadastro e participação são restritos a <strong>maiores de 18 anos</strong>. Ao prosseguir, você declara ter idade legal para participar.
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-gray-800/80 p-3.5 rounded-2xl border border-gray-700/80 flex gap-3 items-start">
+                <span className="text-xl flex-shrink-0">💡</span>
+                <div>
+                  <h4 className="font-bold text-gray-200 text-xs uppercase tracking-wider mb-0.5">Jogo Responsável</h4>
+                  <p className="text-gray-300 text-xs leading-relaxed">
+                    Nunca utilize recursos orçados para alimentação, saúde, contas essenciais ou sustento da família. Aposte somente valores que não façam falta e estabeleça limites para seu entretenimento.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Ação de aceite obrigatória */}
+            <div className="pt-3 border-t border-gray-800 relative z-10">
+              <button 
+                type="button"
+                onClick={() => {
+                  setShowPostRegisterConsent(false);
+                  localStorage.setItem('terms_consent_acknowledged', 'true');
+                }}
+                className="w-full bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-400 hover:to-amber-400 text-gray-950 font-black py-4 rounded-xl text-sm uppercase tracking-wider transition hover:scale-[1.01] shadow-[0_0_20px_rgba(234,179,8,0.4)] flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span>✅</span>
+                <span>Estou ciente e aceito os termos</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Completo de Termos de Uso e Diversão (aberto via link ou rodapé) */}
+      {showTermsModal && (
+        <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-gray-900 border border-gray-700 p-6 md:p-8 rounded-3xl w-full max-w-lg shadow-2xl relative text-white max-h-[85vh] flex flex-col">
+            <h2 className="text-2xl font-black mb-1 text-yellow-400 flex items-center gap-2">
+              📜 Termos de Uso e Jogo Consciente
+            </h2>
+            <p className="text-xs text-gray-400 mb-4">Diretrizes de transparência, entretenimento e responsabilidade da SiteBet.</p>
+
+            <div className="flex-1 overflow-y-auto custom-scrollbar space-y-4 text-xs md:text-sm text-gray-300 pr-2 leading-relaxed">
+              <section className="bg-gray-800/50 p-3.5 rounded-xl border border-gray-800">
+                <h3 className="font-bold text-white mb-1">1. Natureza do Serviço e Diversão</h3>
+                <p>A SiteBet oferece uma plataforma digital com slots, jogos crash e cassino para fins <strong>estritamente recreativos e de entretenimento</strong>.</p>
+              </section>
+
+              <section className="bg-gray-800/50 p-3.5 rounded-xl border border-gray-800">
+                <h3 className="font-bold text-white mb-1">2. Sem Garantia de Ganhos ou Lucros</h3>
+                <p>Nenhum jogo presente no site deve ser interpretado como investimento, emprego, fonte de renda ou promessa de retorno financeiro. Os resultados dependem de geradores matemáticos e regras probabilísticas, havendo risco integral de perda dos valores apostados.</p>
+              </section>
+
+              <section className="bg-gray-800/50 p-3.5 rounded-xl border border-gray-800">
+                <h3 className="font-bold text-white mb-1">3. Idade Mínima (+18)</h3>
+                <p>É estritamente proibido o cadastro e uso por indivíduos menores de 18 anos. Contas identificadas em descumprimento serão permanentemente bloqueadas.</p>
+              </section>
+
+              <section className="bg-gray-800/50 p-3.5 rounded-xl border border-gray-800">
+                <h3 className="font-bold text-white mb-1">4. Práticas de Jogo Responsável</h3>
+                <p>Recomendamos que todos os usuários definam orçamentos prévios de lazer e jamais apostem valores essenciais para o sustento próprio ou de dependentes. Jogue com moderação.</p>
+              </section>
+            </div>
+
+            <button 
+              type="button" 
+              onClick={() => setShowTermsModal(false)}
+              className="mt-5 w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-3.5 rounded-xl uppercase tracking-wider text-xs border border-gray-700 transition cursor-pointer"
+            >
+              Fechar
             </button>
           </div>
         </div>
