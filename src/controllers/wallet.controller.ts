@@ -377,8 +377,9 @@ export const setupWebhook = async (req: Request, res: Response): Promise<void> =
   try {
     const webhookUrl = 'https://sitebet-backend.onrender.com/webhooks/payment';
     const chave = process.env.EFI_PIX_KEY as string;
+    const headers = { 'x-skip-mtls-checking': 'true' };
 
-    const response = await efi.pixConfigWebhook({ chave }, { webhookUrl });
+    const response = await (efi as any).pixConfigWebhook({ chave }, { webhookUrl }, headers);
     res.json({
       success: true,
       message: 'Webhook parametrizado com sucesso na Efí!',
